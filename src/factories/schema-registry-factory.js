@@ -22,7 +22,7 @@ var SchemaRegistryFactory = function ($rootScope, $http, $location, $q, $log, Ut
     $http.get(url)
       .then(
         function successCallback(response) {
-          var allSubjectNames = response.data;
+          var allSubjectNames = response.data.map(elem => elem.replace(/\//g, '%2F'));
           $log.debug("  curl -X GET " + url + " => " + allSubjectNames.length + " registered subjects in [ " + ((new Date().getTime()) - start) + " ] msec");
           deferred.resolve(allSubjectNames);
         },
