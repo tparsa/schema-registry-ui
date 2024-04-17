@@ -33,6 +33,14 @@ var SchemaRegistryFactory = function ($rootScope, $http, $location, $q, $log, Ut
     return deferred.promise;
   }
 
+  function safeJSONParser(text){
+    try{
+      return JSON.parse(text)
+    }
+    catch(err){
+      return text
+    }
+  }
   /**
    * Get subjects versions
    * @see http://docs.confluent.io/3.0.0/schema-registry/docs/api.html#get--subjects-(string- subject)-versions
@@ -519,7 +527,7 @@ var SchemaRegistryFactory = function ($rootScope, $http, $location, $q, $log, Ut
                 version: data.version,  // version
                 id: data.id,            // id
                 schema: data.schema,    // schema - in String - schema i.e. {\"type\":\"record\",\"name\":\"User\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}
-                Schema: JSON.parse(data.schema), // js type | name | doc | fields ...
+                Schema: safeJSONParser(data.schema), // js type | name | doc | fields ...
                 subjectName: data.subject
               };
               CACHE.push(cacheData);
@@ -554,7 +562,7 @@ var SchemaRegistryFactory = function ($rootScope, $http, $location, $q, $log, Ut
               version: subjectInformation.version,
               id: subjectInformation.id,
               schema: subjectInformation.schema, // this is text
-              Schema: JSON.parse(subjectInformation.schema), // this is json
+              Schema: safeJSONParser(subjectInformation.schema), // this is json
               subjectName: subjectInformation.subject
             };
             $log.debug("  pipeline: " + subjectName + "/" + subjectVersion + " in [ " + (new Date().getTime() - start) + " ] msec");
@@ -619,11 +627,12 @@ var SchemaRegistryFactory = function ($rootScope, $http, $location, $q, $log, Ut
       for (var i = 0; i < sortedHistory.length; i++) {
         var previous = '';
         if (i > 0)
-          previous = JSON.parse(sortedHistory[i - 1].schema);
+          previous = safeJSONParser(sortedHistory[i - 1].schema)
+        
         var changeDetected = {
           version: sortedHistory[i].version,
           id: sortedHistory[i].id,
-          current: JSON.parse(sortedHistory[i].schema),
+          current: safeJSONParser(sortedHistory[i].schema),
           previous: previous
         };
         changelog.push(changeDetected);
